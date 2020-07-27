@@ -67,14 +67,12 @@ public class Group {
     @Override
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        strb.append("Group:").append("\n");
         for(LinkedList<Long> ib : stringList) {
             for(int i = 0; i < ib.size(); i++) {
                 strb.append(ib.get(i)).append(";");
             }
             strb.append("\n");
         }
-        strb.append("\n");
         return strb.toString();
     }
     

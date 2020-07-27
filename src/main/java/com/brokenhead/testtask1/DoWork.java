@@ -6,11 +6,13 @@
 package com.brokenhead.testtask1;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -19,7 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * 
+ *
  *
  * @author brokenhead
  */
@@ -32,17 +34,18 @@ public class DoWork {
     private final char SEMI_COL = ';';
 
     public void doApp() {
-        try {
             File requestedFile = new File(INPUT_FILE_PATH);
+            File resultFile = new File(OUTPUT_FILE_PATH);
+        try {
             FileReader fr = new FileReader(requestedFile);
             BufferedReader br = new BufferedReader(fr);
             try {
                 int count = 0;
-                while (count < 1000007) {
+                String lineRead;
+                while ((lineRead = br.readLine()) != null) {
                     LinkedList<Long> numNum = new LinkedList();
-                    String lineRead = br.readLine();
                     if (!lineRead.contains(";")) {
-                        System.out.println("------ skip string " + count +". no ;");
+                        System.out.println("------ skip string " + count + ". no ;");
                         continue;
                     }
                     //Parse string:
@@ -61,9 +64,10 @@ public class DoWork {
                             } else { // "645674876... Beginning of the value
                                 st = i + 1;
                             }
-                        } else if (lineRead.charAt(i) == QUAT &&  // quat and end of string: ...6545"
-                                   i == lineRead.length() - 1 && 
-                                   lineRead.charAt(i - 1) != QUAT) {
+                        } else if (lineRead.charAt(i) == QUAT
+                                && // quat and end of string: ...6545"
+                                i == lineRead.length() - 1
+                                && lineRead.charAt(i - 1) != QUAT) {
                             en = i;
                             numNum.add(Long.parseLong(lineRead, st, en, 10));
                         }
@@ -77,26 +81,35 @@ public class DoWork {
         } catch (FileNotFoundException exc) {
             System.out.println("FileNotFound Damn!");
         }
-        
+
         // Get distinct values using Set; sort values; get reversed order:
         HashSet<Group> setGrp = new HashSet(megaMap.values());
         List<Group> valuesOut = new LinkedList(setGrp);
         Comparator<Group> comp = (grp1, grp2) -> grp1.getGroupSize().compareTo(grp2.getGroupSize());
         valuesOut.sort(comp);
         Collections.reverse(valuesOut);
-        
+        // Count groups
         int count = 0;
-        System.out.println("List size " + valuesOut.size());
-        for(Group grp : valuesOut) {
+        for (Group grp : valuesOut) {
             int size = grp.getGroupSize();
-            if(size > 1){
+            if (size > 1) {
                 count++;
             }
         }
-        
+        // Write result to file
+        try(PrintWriter writer = new PrintWriter(resultFile, "UTF-8");) {
+            writer.println("Groups with more than 2 elements: " + count);
+            int groupIndex = 0;
+            for (Group grp : valuesOut) {
+                writer.println("Group" + groupIndex);
+                writer.println(grp.toString());
+                groupIndex++;
+            }
+        } catch (IOException iox) {
+            System.out.println("IOExceptiom on write!");
+        }
     }
 
-    
     private void searchInGroups(LinkedList<Long> numNum) {
         List<Group> matchedGroups = new LinkedList();
         List<Integer> matchedIndexes = new LinkedList();
@@ -124,7 +137,6 @@ public class DoWork {
         }
     }
 
-    
     private void saveUnmatched(List<Integer> matchedIndexes, LinkedList<Long> values, Group grp) {
         for (int i = 0; i < matchedIndexes.size(); i++) {
             for (int j = 0; j < values.size(); j++) {
@@ -146,6 +158,5 @@ public class DoWork {
             });
         }
     }
-    
-    
+
 }

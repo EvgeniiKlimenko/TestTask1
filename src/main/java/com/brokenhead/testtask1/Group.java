@@ -5,43 +5,60 @@
  */
 package com.brokenhead.testtask1;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
- * 
+ *
  * @author brokenhead
  */
 public class Group {
-    private List<LinkedList<Long>> stringList = new LinkedList();
-    
-    public Group(LinkedList<Long> arrr){
-        this.addString(arrr);
-    }
-    
-    public Integer getGroupSize(){
-        return stringList.size();
-    }
-    
-    public void addString(LinkedList<Long> arr){
-        stringList.add(arr);
-    }
-    
-    public void addAllStrings(List<LinkedList<Long>> arr){
-        stringList.addAll(arr);
+
+    private final List<LinkedList<Long>> rowList = new LinkedList();
+
+    public Group(LinkedList<Long> arrr) {
+        this.addRow(arrr);
     }
 
-    public List<LinkedList<Long>> getStringList() {
-        return stringList;
+    public Integer getGroupSize() {
+        return rowList.size();
+    }
+
+    public void addRow(LinkedList<Long> arr) {
+        rowList.add(arr);
+    }
+
+    public void addAllRows(List<LinkedList<Long>> arr) {
+        rowList.addAll(arr);
+    }
+
+    public List<LinkedList<Long>> getRowList() {
+        return rowList;
+    }
+
+    public boolean containsRow(LinkedList<Long> rowToCheck) {
+        boolean fullyEqual = false;
+        int matchCount = 0;
+        for (LinkedList<Long> str : rowList) {
+            if (rowToCheck.size() == str.size()) {
+                for (int i = 0; i < str.size(); i++) {
+                    if (str.get(i).equals(rowToCheck.get(i))){
+                        matchCount++;
+                    }
+                }
+                if(matchCount == rowToCheck.size()) {
+                   fullyEqual = true; 
+                }
+            }
+        }
+        return fullyEqual;
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 59 * hash + Objects.hashCode(this.stringList);
+        hash = 59 * hash + Objects.hashCode(this.rowList);
         return hash;
     }
 
@@ -57,24 +74,22 @@ public class Group {
             return false;
         }
         final Group other = (Group) obj;
-        if (!Objects.equals(this.stringList, other.stringList)) {
+        if (!Objects.equals(this.rowList, other.rowList)) {
             return false;
         }
         return true;
     }
-    
-    
+
     @Override
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        for(LinkedList<Long> ib : stringList) {
-            for(int i = 0; i < ib.size(); i++) {
+        for (LinkedList<Long> ib : rowList) {
+            for (int i = 0; i < ib.size(); i++) {
                 strb.append(ib.get(i)).append(";");
             }
             strb.append("\n");
         }
         return strb.toString();
     }
-    
-    
+
 }

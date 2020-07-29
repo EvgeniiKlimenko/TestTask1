@@ -84,16 +84,6 @@ public class Group {
         StringBuilder strb = new StringBuilder();
         for (LinkedList<Long> row : rowList) {
             for (int i = 0; i < row.size(); i++) {
-                /*if (!row.get(i).equals(DoWork.EMPTY_VALUE) && i != row.size() - 1) { //not empty and not the end of string
-                    strb.append(row.get(i)).append(";");
-                } else if (!row.get(i).equals(DoWork.EMPTY_VALUE) && i == row.size() - 1) { // not empty and the end 
-                    strb.append(row.get(i));
-                } else if (row.get(i).equals(DoWork.EMPTY_VALUE) && i != row.size() - 1) {    // empty and not the end
-                    strb.append(";");
-                } else if (row.get(i).equals(DoWork.EMPTY_VALUE) && i == row.size() - 1) {    // empty and the end
-                    continue;
-                }
-                */
                if(!row.get(i).equals(DoWork.EMPTY_VALUE))
                    strb.append(row.get(i));
                

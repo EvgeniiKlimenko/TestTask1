@@ -36,43 +36,44 @@ public class DoWork {
         File requestedFile = new File(INPUT_FILE_PATH);
         File resultFile = new File(OUTPUT_FILE_PATH);
         try (BufferedReader br = new BufferedReader(new FileReader(requestedFile))) {
-            int count = 0;
             String lineRead;
             while ((lineRead = br.readLine()) != null) {
                 //Parse string:
                 LinkedList<Long> currentRow = new LinkedList();
                 String[] valuesAr = lineRead.split(SEMI_COL);
-                
-                if(valuesAr.length != 3) {
+
+                if (valuesAr.length != 3) {
                     continue;
                 }
-                for(int i = 0; i<valuesAr.length; i++) {
-                    if(valuesAr[i].indexOf(QUOTE, 1) != (valuesAr[i].length()-1)) { // "6546"5645645"    
-                        continue;
+                boolean hasParseError = false;
+                for (int i = 0; i < valuesAr.length; i++) {
+                    if (valuesAr[i].indexOf(QUOTE, 1) != (valuesAr[i].length() - 1)) { // "6546"5645645"  
+                        hasParseError = true;
+                        break;
                     }
-                    if(valuesAr[i].length() < 4) {    // ""; empty value
+                    if (valuesAr[i].length() < 3) {    // ""; empty value
                         currentRow.add(EMPTY_VALUE);
                         continue;
                     }
                     currentRow.add(Long.parseLong(valuesAr[i].replaceAll(QUOTE, "")));
                 }
-                searchInGroups(currentRow);
-                count++;
+                if (!hasParseError) {
+                    searchInGroups(currentRow);
+                }
             }
         } catch (FileNotFoundException exc) {
             System.out.println("FileNotFoundException!");
         } catch (IOException iox) {
             System.out.println("IOException!");
         }
-        
-        
+
         // Get distinct values using Set; sort values; get reversed order:
         HashSet<Group> setGrp = new HashSet(megaMap.values());
         List<Group> valuesOut = new LinkedList(setGrp);
         Comparator<Group> comp = (grp1, grp2) -> grp1.getGroupSize().compareTo(grp2.getGroupSize());
         valuesOut.sort(comp);
         Collections.reverse(valuesOut);
-        
+
         // Count groups
         int count = 0;
         for (Group grp : valuesOut) {
@@ -81,8 +82,8 @@ public class DoWork {
                 count++;
             }
         }
-        System.out.println("Groups with more than one values: " + count);
-        
+        //System.out.println("Groups with more than one values: " + count);
+
         // Write result to file        
         try (PrintWriter writer = new PrintWriter(resultFile, "UTF-8");) {
             writer.println("Groups with more than 1 element: " + count + "\n");
@@ -105,9 +106,14 @@ public class DoWork {
         for (int i = 0; i < currentRow.size(); i++) {
             if (!currentRow.get(i).equals(EMPTY_VALUE) && megaMap.containsKey(currentRow.get(i))) {
                 Group foundGroup = megaMap.get(currentRow.get(i));
-                if (matchedGroups.contains(foundGroup) || foundGroup.containsRow(currentRow)) {
+                if (matchedGroups.contains(foundGroup)) {
                     continue;
                 }
+
+                if (foundGroup.containsRow(currentRow)) { // duplicate found
+                    return;
+                }
+
                 matchedGroups.add(foundGroup);
                 matchedIndexes.add(i);
             }
@@ -123,18 +129,17 @@ public class DoWork {
             Group grp = matchedGroups.get(0);
             grp.addRow(currentRow);
             saveUnmatched(matchedIndexes, currentRow, grp);
-        } else {                        //more than one found
+        } else {                                //more than one found
             Group firstGroup = matchedGroups.get(0);
+            firstGroup.addRow(currentRow);
             mergeGroups(matchedGroups, firstGroup);
         }
     }
 
     private void saveUnmatched(List<Integer> matchedIndexes, LinkedList<Long> currentRow, Group firstGroup) {
-        for (int i = 0; i < matchedIndexes.size(); i++) {
-            for (int j = 0; j < currentRow.size(); j++) {
-                if (matchedIndexes.get(i) != j) {
-                    megaMap.put(currentRow.get(j), firstGroup);
-                }
+        for (int j = 0; j < currentRow.size(); j++) {
+            if (!matchedIndexes.contains(j) && !currentRow.get(j).equals(EMPTY_VALUE)) {
+                megaMap.put(currentRow.get(j), firstGroup);
             }
         }
     }

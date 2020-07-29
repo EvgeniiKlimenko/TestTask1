@@ -38,21 +38,20 @@ public class Group {
     }
 
     public boolean containsRow(LinkedList<Long> rowToCheck) {
-        boolean fullyEqual = false;
         int matchCount = 0;
-        for (LinkedList<Long> str : rowList) {
-            if (rowToCheck.size() == str.size()) {
-                for (int i = 0; i < str.size(); i++) {
-                    if (str.get(i).equals(rowToCheck.get(i))){
+        for (LinkedList<Long> row : rowList) {
+            if (rowToCheck.size() == row.size()) {
+                for (int i = 0; i < row.size(); i++) {
+                    if (row.get(i).equals(rowToCheck.get(i))){
                         matchCount++;
                     }
                 }
                 if(matchCount == rowToCheck.size()) {
-                   fullyEqual = true; 
+                   return true; 
                 }
             }
         }
-        return fullyEqual;
+        return false;
     }
 
     @Override
@@ -83,9 +82,12 @@ public class Group {
     @Override
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        for (LinkedList<Long> ib : rowList) {
-            for (int i = 0; i < ib.size(); i++) {
-                strb.append(ib.get(i)).append(";");
+        for (LinkedList<Long> row : rowList) {
+            for (int i = 0; i < row.size(); i++) { 
+                if(row.get(i).equals(DoWork.EMPTY_VALUE)) {
+                   strb.append(";");
+                } else
+                   strb.append(row.get(i)).append(";");
             }
             strb.append("\n");
         }

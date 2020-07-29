@@ -19,71 +19,60 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
+ * "A1";"";"" is correct
  *
  * @author brokenhead
  */
 public class DoWork {
 
-    public final String INPUT_FILE_PATH = "FilesF/lng.csv";
-    public final String OUTPUT_FILE_PATH = "FilesF/AppOut.txt";
+    private final static String INPUT_FILE_PATH = "FilesF/lng.csv";
+    private final static String OUTPUT_FILE_PATH = "FilesF/AppOut.txt";
     private final HashMap<Long, Group> megaMap = new HashMap();
-    private final char QUAT = '"';
-    private final char SEMI_COL = ';';
+    private final static String QUOTE = "\"";
+    private final static String SEMI_COL = ";";
+    public final static Long EMPTY_VALUE = new Long(-1); // represents this: "";
 
     public void doApp() {
-            File requestedFile = new File(INPUT_FILE_PATH);
-            File resultFile = new File(OUTPUT_FILE_PATH);
-        try {
-            FileReader fr = new FileReader(requestedFile);
-            try(BufferedReader br = new BufferedReader(fr)) {
-                String lineRead; 
-                while ((lineRead = br.readLine()) != null) {
-                    LinkedList<Long> currentRow = new LinkedList();
-                    lineRead = br.readLine();
-                    if (!lineRead.contains(";")) {
-                        System.out.println("------ skip string. no ;");
+        File requestedFile = new File(INPUT_FILE_PATH);
+        File resultFile = new File(OUTPUT_FILE_PATH);
+        try (BufferedReader br = new BufferedReader(new FileReader(requestedFile))) {
+            int count = 0;
+            String lineRead;
+            while ((lineRead = br.readLine()) != null) {
+                //Parse string:
+                LinkedList<Long> currentRow = new LinkedList();
+                String[] valuesAr = lineRead.split(SEMI_COL);
+                
+                if(valuesAr.length != 3) {
+                    continue;
+                }
+                for(int i = 0; i<valuesAr.length; i++) {
+                    if(valuesAr[i].indexOf(QUOTE, 1) != (valuesAr[i].length()-1)) { // "6546"5645645"    
                         continue;
                     }
-                    //Parse string:
-                    int st = 0, en = 0;
-                    for (int i = 0; i < lineRead.length(); i++) {
-                        //found quat and not end of string
-                        if (lineRead.charAt(i) == QUAT && i != lineRead.length() - 1) {
-                            //end of a value
-                            if (lineRead.charAt(i + 1) == SEMI_COL && lineRead.charAt(i - 1) != QUAT) {
-                                en = i;
-                                try {
-                                    currentRow.add(Long.parseLong(lineRead, st, en, 10));
-                                } catch (NumberFormatException numex) {
-                                    System.out.println("Bad raw value: " + lineRead);
-                                }
-                            } else { // "645674876... Beginning of the value
-                                st = i + 1;
-                            }
-                        } else if (lineRead.charAt(i) == QUAT
-                                && // quat and end of string: ...6545"
-                                i == lineRead.length() - 1
-                                && lineRead.charAt(i - 1) != QUAT) {
-                            en = i;
-                            currentRow.add(Long.parseLong(lineRead, st, en, 10));
-                        }
+                    if(valuesAr[i].length() < 4) {    // ""; empty value
+                        currentRow.add(EMPTY_VALUE);
+                        continue;
                     }
-                    searchInGroups(currentRow);
+                    currentRow.add(Long.parseLong(valuesAr[i].replaceAll(QUOTE, "")));
                 }
-            } catch (IOException iox) {
-                System.out.println("IOException!");
+                searchInGroups(currentRow);
+                count++;
             }
         } catch (FileNotFoundException exc) {
             System.out.println("FileNotFoundException!");
+        } catch (IOException iox) {
+            System.out.println("IOException!");
         }
-
+        
+        
         // Get distinct values using Set; sort values; get reversed order:
         HashSet<Group> setGrp = new HashSet(megaMap.values());
         List<Group> valuesOut = new LinkedList(setGrp);
         Comparator<Group> comp = (grp1, grp2) -> grp1.getGroupSize().compareTo(grp2.getGroupSize());
         valuesOut.sort(comp);
         Collections.reverse(valuesOut);
+        
         // Count groups
         int count = 0;
         for (Group grp : valuesOut) {
@@ -92,32 +81,32 @@ public class DoWork {
                 count++;
             }
         }
-        // Write result to file
-        /**/
-        try(PrintWriter writer = new PrintWriter(resultFile, "UTF-8");) {
+        System.out.println("Groups with more than one values: " + count);
+        
+        // Write result to file        
+        try (PrintWriter writer = new PrintWriter(resultFile, "UTF-8");) {
             writer.println("Groups with more than 1 element: " + count + "\n");
             int groupIndex = 0;
             for (Group grp : valuesOut) {
-                if(grp.getGroupSize() > 1){
+                if (grp.getGroupSize() > 1) {
                     writer.println("Group" + groupIndex);
                     writer.println(grp.toString());
                     groupIndex++;
                 }
             }
         } catch (IOException iox) {
-            System.out.println("IOExceptiom on write!");
+            System.out.println("IOException on write!");
         }
-        
     }
 
     private void searchInGroups(LinkedList<Long> currentRow) {
         List<Group> matchedGroups = new LinkedList();
         List<Integer> matchedIndexes = new LinkedList();
         for (int i = 0; i < currentRow.size(); i++) {
-            if (megaMap.containsKey(currentRow.get(i))) {
+            if (!currentRow.get(i).equals(EMPTY_VALUE) && megaMap.containsKey(currentRow.get(i))) {
                 Group foundGroup = megaMap.get(currentRow.get(i));
-                if(matchedGroups.contains(foundGroup) || foundGroup.containsRow(currentRow)) {
-                        continue;
+                if (matchedGroups.contains(foundGroup) || foundGroup.containsRow(currentRow)) {
+                    continue;
                 }
                 matchedGroups.add(foundGroup);
                 matchedIndexes.add(i);
@@ -126,7 +115,9 @@ public class DoWork {
         if (matchedGroups.isEmpty()) {         // no groups found
             Group grp = new Group(currentRow);
             for (int i = 0; i < currentRow.size(); i++) {
-                megaMap.put(currentRow.get(i), grp);
+                if (!currentRow.get(i).equals(EMPTY_VALUE)) {
+                    megaMap.put(currentRow.get(i), grp);
+                }
             }
         } else if (matchedGroups.size() == 1) { // one group found
             Group grp = matchedGroups.get(0);
@@ -134,14 +125,8 @@ public class DoWork {
             saveUnmatched(matchedIndexes, currentRow, grp);
         } else {                        //more than one found
             Group firstGroup = matchedGroups.get(0);
-            if(matchedGroups.size() == 1){
-                firstGroup.addRow(currentRow); 
-                saveUnmatched(matchedIndexes, currentRow, firstGroup);
-            } else {
-                mergeGroups(matchedGroups, firstGroup);
-            }
+            mergeGroups(matchedGroups, firstGroup);
         }
-    
     }
 
     private void saveUnmatched(List<Integer> matchedIndexes, LinkedList<Long> currentRow, Group firstGroup) {
@@ -158,12 +143,12 @@ public class DoWork {
         for (int i = 1; i < matchedGroups.size(); i++) {
             List<LinkedList<Long>> rowList = matchedGroups.get(i).getRowList();
             firstGrp.addAllRows(rowList);
-            rowList.forEach(lnLs -> {
-                for (int k = 0; k < lnLs.size(); k++) {
-                    megaMap.put(lnLs.get(k), firstGrp);
+            rowList.forEach(row -> {
+                for (int k = 0; k < row.size(); k++) {
+                    megaMap.put(row.get(k), firstGrp);  // override key with new value
                 }
             });
         }
     }
-    
+
 }

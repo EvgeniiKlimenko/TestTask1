@@ -15,9 +15,9 @@ import java.util.Objects;
  */
 public class Group {
 
-    private final List<LinkedList<Long>> rowList = new LinkedList();
+    private final List<LinkedList<String>> rowList = new LinkedList();
 
-    public Group(LinkedList<Long> arrr) {
+    public Group(LinkedList<String> arrr) {
         this.addRow(arrr);
     }
 
@@ -25,20 +25,20 @@ public class Group {
         return rowList.size();
     }
 
-    public void addRow(LinkedList<Long> arr) {
+    public void addRow(LinkedList<String> arr) {
         rowList.add(arr);
     }
 
-    public void addAllRows(List<LinkedList<Long>> arr) {
+    public void addAllRows(List<LinkedList<String>> arr) {
         rowList.addAll(arr);
     }
 
-    public List<LinkedList<Long>> getRowList() {
+    public List<LinkedList<String>> getRowList() {
         return rowList;
     }
 
-    public boolean containsRow(LinkedList<Long> rowToCheck) {
-        for (LinkedList<Long> row : rowList) {
+    public boolean containsRow(LinkedList<String> rowToCheck) {
+        for (LinkedList<String> row : rowList) {
             int matchCount = 0;
             if (rowToCheck.size() == row.size()) {
                 for (int i = 0; i < row.size(); i++) {
@@ -82,7 +82,7 @@ public class Group {
     @Override
     public String toString() {
         StringBuilder strb = new StringBuilder();
-        for (LinkedList<Long> row : rowList) {
+        for (LinkedList<String> row : rowList) {
             for (int i = 0; i < row.size(); i++) {
                if(!row.get(i).equals(DoWork.EMPTY_VALUE))
                    strb.append(row.get(i));

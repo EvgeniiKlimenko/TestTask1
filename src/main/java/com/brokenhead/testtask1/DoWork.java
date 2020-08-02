@@ -19,18 +19,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * "A1";"";"" is correct
+ * 
  *
  * @author brokenhead
  */
 public class DoWork {
 
-    private final static String INPUT_FILE_PATH = "FilesF/lng.csv";
+    private final static String INPUT_FILE_PATH = "FilesF/lng-big.csv";
     private final static String OUTPUT_FILE_PATH = "FilesF/AppOut.txt";
-    private final HashMap<Long, Group> megaMap = new HashMap();
+    private final HashMap<String, Group> megaMap = new HashMap();
     private final static String QUOTE = "\"";
     private final static String SEMI_COL = ";";
-    public final static Long EMPTY_VALUE = new Long(-1); // represents this: "";
+    public final static String EMPTY_VALUE = "none"; // represents this: "";
 
     public void doApp() {
         File requestedFile = new File(INPUT_FILE_PATH);
@@ -39,9 +39,8 @@ public class DoWork {
             String lineRead;
             while ((lineRead = br.readLine()) != null) {
                 //Parse string:
-                LinkedList<Long> currentRow = new LinkedList();
+                LinkedList<String> currentRow = new LinkedList();
                 String[] valuesAr = lineRead.split(SEMI_COL);
-
                 if (valuesAr.length != 3) {
                     continue;
                 }
@@ -55,15 +54,15 @@ public class DoWork {
                         currentRow.add(EMPTY_VALUE);
                         continue;
                     }
-                    currentRow.add(Long.parseLong(valuesAr[i].replaceAll(QUOTE, "")));
+                        currentRow.add(valuesAr[i].replaceAll(QUOTE, ""));
                 }
                 if (!hasParseError) {
                     searchInGroups(currentRow);
                 }
             }
-        } catch (FileNotFoundException exc) {
+        } catch(FileNotFoundException exc) {
             System.out.println("FileNotFoundException!");
-        } catch (IOException iox) {
+        } catch(IOException iox) {
             System.out.println("IOException!");
         }
 
@@ -82,9 +81,10 @@ public class DoWork {
                 count++;
             }
         }
-        //System.out.println("Groups with more than one values: " + count);
+        System.out.println("Groups with more than one values: " + count);
 
-        // Write result to file        
+        // Write result to file      
+        
         try (PrintWriter writer = new PrintWriter(resultFile, "UTF-8");) {
             writer.println("Groups with more than 1 element: " + count + "\n");
             int groupIndex = 0;
@@ -97,16 +97,16 @@ public class DoWork {
             }
         } catch (IOException iox) {
             System.out.println("IOException on write!");
-        }
+        } 
     }
 
-    private void searchInGroups(LinkedList<Long> currentRow) {
+    private void searchInGroups(LinkedList<String> currentRow) {
         List<Group> matchedGroups = new LinkedList();
         List<Integer> matchedIndexes = new LinkedList();
         for (int i = 0; i < currentRow.size(); i++) {
             if (!currentRow.get(i).equals(EMPTY_VALUE) && megaMap.containsKey(currentRow.get(i))) {
                 Group foundGroup = megaMap.get(currentRow.get(i));
-                if (matchedGroups.contains(foundGroup)) {
+                if (matchedGroups.contains(foundGroup)) { // same group found
                     continue;
                 }
 
@@ -136,7 +136,7 @@ public class DoWork {
         }
     }
 
-    private void saveUnmatched(List<Integer> matchedIndexes, LinkedList<Long> currentRow, Group firstGroup) {
+    private void saveUnmatched(List<Integer> matchedIndexes, LinkedList<String> currentRow, Group firstGroup) {
         for (int j = 0; j < currentRow.size(); j++) {
             if (!matchedIndexes.contains(j) && !currentRow.get(j).equals(EMPTY_VALUE)) {
                 megaMap.put(currentRow.get(j), firstGroup);
@@ -146,7 +146,7 @@ public class DoWork {
 
     private void mergeGroups(List<Group> matchedGroups, Group firstGrp) {
         for (int i = 1; i < matchedGroups.size(); i++) {
-            List<LinkedList<Long>> rowList = matchedGroups.get(i).getRowList();
+            List<LinkedList<String>> rowList = matchedGroups.get(i).getRowList();
             firstGrp.addAllRows(rowList);
             rowList.forEach(row -> {
                 for (int k = 0; k < row.size(); k++) {

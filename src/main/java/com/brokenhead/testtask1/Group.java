@@ -16,7 +16,9 @@ import java.util.Objects;
 public class Group {
 
     private final List<LinkedList<String>> rowList = new LinkedList();
-
+    boolean isFirst = false;
+    
+    
     public Group(LinkedList<String> arrr) {
         this.addRow(arrr);
     }
